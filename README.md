@@ -119,7 +119,7 @@ modelRoles:
 ## 行为说明
 
 - **Bootstrap**：会话首个请求 system = 官方 persona 原句，wire 工具 = `[bash, str_replace_editor]`（dsh minimal 原配，schema 逐字节复刻），`max_tokens` 对齐 256000；非最小工具调用被硬拦截（等价 dsh 的"工具不存在"）。
-- **晋升**：首个持久信号（首次合法工具调用 / 对话中出现第一条 assistant 消息）后，工具目录恢复全量，system 按 `ANCHORED_PROMOTED_MODE` 重建：默认 `lean`（persona 打头 + 项目注入 + omp 原文段 + xd:// 设备文档 + 紧凑工具清单）；`upstream`（persona 全程为 system，原 omp 上下文整体转为 user 消息，对齐 pi 移植）。
+- **晋升**：首个持久信号（首次合法工具调用 / 对话中出现第一条 assistant 消息）后，工具目录恢复全量，system 按 `ANCHORED_PROMOTED_MODE` 重建：默认 `lean`（persona 打头 + 项目注入 + omp 原文段 + xd:// 设备文档 + 紧凑工具清单）；`upstream`（persona 全程为 system，原 omp 上下文整体转为 user 消息，对齐 pi 移植）。相位以会话内 custom entry 持久化——resume/分支/树导航后按当前分支最后一条记录恢复，不会退回 bootstrap。
 - **`/dsh-anchor` 命令**：`status`（默认）查看相位；`promote` 立即晋升；`on`/`off` 为本会话重新武装/禁用 bootstrap。TUI 底栏在晋升前显示 `bootstrap: bash/str_replace_editor`，晋升后清除。
 - **`str_replace_editor`**：注册为常驻工具，view/create/str_replace/insert 四命令、官方文案、晋升后保留。
 

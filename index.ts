@@ -554,6 +554,58 @@ export default function anchored(pi: ExtensionAPI) {
   let promoted = false;
   let disabled = false;
 
+  // 持久化相位：promote/off/on 时向会话追加 custom entry（不进 LLM 上下文），
+  // 恢复时按当前分支上最后一条 anchored entry 重建状态（与上游 dsh 的
+  // "phase 从 durable session events 派生" 对齐）。
+  const PHASE_ENTRY_TYPE = "anchored";
+  type AnchorPhase = "bootstrap" | "promoted" | "off";
+
+  function phaseFromBranch(entries: unknown[]): AnchorPhase {
+    let phase: AnchorPhase = "bootstrap";
+    for (const entry of entries) {
+      if (!entry || typeof entry !== "object" || !("type" in entry)) continue;
+      if (entry.type !== "custom" || !("customType" in entry)) continue;
+      if (entry.customType !== PHASE_ENTRY_TYPE) continue;
+      const data: unknown = "data" in entry ? entry.data : undefined;
+      if (!data || typeof data !== "object" || !("phase" in data)) continue;
+      const p: unknown = data.phase;
+      if (p === "bootstrap" || p === "promoted" || p === "off") phase = p;
+    }
+    return phase;
+  }
+
+  function restoreFromSession(ctx: unknown): void {
+    if (!ctx || typeof ctx !== "object" || !("sessionManager" in ctx)) return;
+    const sm: unknown = ctx.sessionManager;
+    if (!sm || typeof sm !== "object" || !("getBranch" in sm)) return;
+    const getBranch: unknown = sm.getBranch;
+    if (!isFunction(getBranch)) return;
+    let entries: unknown;
+    try {
+      entries = Reflect.apply(getBranch, sm, []);
+    } catch {
+      return;
+    }
+    const phase = phaseFromBranch(Array.isArray(entries) ? entries : []);
+    promoted = phase === "promoted";
+    disabled = phase === "off";
+    debug("restore", { phase });
+  }
+
+  function persistPhase(phase: AnchorPhase, extra?: Record<string, unknown>): void {
+    try {
+      pi.appendEntry(PHASE_ENTRY_TYPE, { phase, at: Date.now(), ...extra });
+    } catch (err) {
+      debug("persist-failed", { phase, error: String(err) });
+    }
+  }
+
+  function footerText(): string | undefined {
+    if (disabled) return "anchored: off";
+    if (!promoted) return `bootstrap: ${BOOTSTRAP_TOOLS.join("/")}`;
+    return undefined;
+  }
+
   function debug(event: string, payload: unknown) {
     if (!process.env.ANCHORED_DEBUG) return;
     try {
@@ -584,21 +636,33 @@ export default function anchored(pi: ExtensionAPI) {
   function promote(trigger: string) {
     if (promoted) return;
     promoted = true;
+    disabled = false;
+    persistPhase("promoted", { trigger });
     debug("promote", { trigger });
   }
-
-  pi.on("session_start", (event: unknown, ctx: unknown) => {
-    setFooter(
-      ctx,
-      disabled
-        ? "anchored: off"
-        : promoted
-          ? undefined
-          : `bootstrap: ${BOOTSTRAP_TOOLS.join("/")}`,
-    );
+  pi.on("session_start", (_event: unknown, ctx: unknown) => {
+    restoreFromSession(ctx);
+    setFooter(ctx, footerText());
   });
 
-  pi.on("session_shutdown", (event: unknown, ctx: unknown) => {
+  // 会话切换/分支/树导航后按当前分支的 anchored entries 重建相位，
+  // 否则同一进程内切走再切回会用旧的内存状态。
+  pi.on("session_switch", (_event: unknown, ctx: unknown) => {
+    restoreFromSession(ctx);
+    setFooter(ctx, footerText());
+  });
+
+  pi.on("session_branch", (_event: unknown, ctx: unknown) => {
+    restoreFromSession(ctx);
+    setFooter(ctx, footerText());
+  });
+
+  pi.on("session_tree", (_event: unknown, ctx: unknown) => {
+    restoreFromSession(ctx);
+    setFooter(ctx, footerText());
+  });
+
+  pi.on("session_shutdown", (_event: unknown, ctx: unknown) => {
     setFooter(ctx, undefined);
   });
 
@@ -614,13 +678,15 @@ export default function anchored(pi: ExtensionAPI) {
       }
       if (arg === "off") {
         disabled = true;
-        setFooter(ctx, "anchored: off");
+        persistPhase("off");
+        setFooter(ctx, footerText());
         return "bootstrap disabled for this session";
       }
       if (arg === "on") {
         disabled = false;
         promoted = false;
-        setFooter(ctx, `bootstrap: ${BOOTSTRAP_TOOLS.join("/")}`);
+        persistPhase("bootstrap");
+        setFooter(ctx, footerText());
         return "bootstrap re-armed";
       }
       return `phase=${promoted ? "promoted" : disabled ? "off" : "bootstrap"}; tools=${BOOTSTRAP_TOOLS.join("/")}; promoteOn=either`;
