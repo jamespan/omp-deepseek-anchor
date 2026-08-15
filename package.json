@@ -1,0 +1,29 @@
+{
+  "name": "omp-deepseek-anchor",
+  "version": "1.0.0",
+  "description": "omp extension: DeepSeek V4 Pro Minimal-anchored bootstrap, then full Standard tools (port of dsh-anchored-standard)",
+  "type": "module",
+  "main": "index.ts",
+  "license": "MIT",
+  "keywords": [
+    "omp",
+    "omp-extension",
+    "oh-my-pi",
+    "deepseek",
+    "deepseek-v4-pro",
+    "anchored-standard"
+  ],
+  "files": [
+    "index.ts",
+    "README.md",
+    "NOTICE"
+  ],
+  "omp": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@oh-my-pi/pi-coding-agent": "*"
+  }
+}

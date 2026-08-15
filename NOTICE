@@ -1,0 +1,27 @@
+# NOTICE
+
+This project is a port and adaptation of the following upstream projects:
+
+1. **xiaobright/dsh-anchored-standard** (MIT)
+   https://github.com/xiaobright/dsh-anchored-standard
+   The two-phase "Anchored Standard" preset design: Minimal-aligned bootstrap
+   (official persona + `bash` + `str_replace_editor` tool pair, suppressed
+   context injections), promotion on the first durable signal, and the
+   preserved minimal pair after promotion. Original copyright and license
+   retained below.
+
+   MIT License — Copyright (c) 2026 xiaobright
+
+2. **deepseek-ai/deepseek-harness** (BSD-3-Clause; frozen commit 47f9438)
+   https://github.com/deepseek-ai/deepseek-harness
+   The `minimal` agent preset and tool definitions ported here:
+   - `minimal/agent.cordis.yml`: persona text and persistent-bash description.
+   - `packages/shell/tool-bash-persistent`: bash tool schema.
+   - `packages/fs/tool-str-replace-editor`: str_replace_editor description,
+     parameter schemas, output formats, error messages, and truncation
+     semantics (ported with only wording-level fidelity over local fs).
+
+   BSD 3-Clause License — Copyright (c) 2025-2026 DeepSeek
+   (See the upstream repository's LICENSE for the full text.)
+
+This project is not affiliated with or endorsed by DeepSeek.
