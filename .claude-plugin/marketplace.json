@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "jamespan-plugins",
+  "owner": {
+    "name": "jamespan",
+    "email": "panjiabang@gmail.com"
+  },
+  "metadata": {
+    "description": "jamespan 的 omp / Claude Code 插件",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "omp-deepseek-anchor",
+      "description": "DeepSeek V4 Pro Minimal-anchored bootstrap, then full Standard tools (port of dsh-anchored-standard)",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/jamespan/omp-deepseek-anchor.git"
+      },
+      "author": { "name": "jamespan" },
+      "homepage": "https://github.com/jamespan/omp-deepseek-anchor",
+      "repository": "https://github.com/jamespan/omp-deepseek-anchor",
+      "license": "MIT",
+      "category": "development",
+      "tags": ["deepseek", "deepseek-v4-pro", "anchored-standard", "coding", "omp"]
+    }
+  ]
+}
