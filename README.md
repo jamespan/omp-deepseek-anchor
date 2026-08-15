@@ -1,5 +1,14 @@
 # omp-deepseek-anchor
 
+## 背景：为什么需要这个插件
+
+**前因：模型是在官方脚手架上训练出来的。** DeepSeek V4 Pro 的官方运行环境是 [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)。其 `minimal` 预设的首请求固定为：官方 RL 原句 `You are a helpful software engineer assistant.` 作为唯一 system 内容、工具目录只有 `bash` + `str_replace_editor`（官方 schema）、适配器默认 `maxTokens = 256000`。模型在训练/评测里大量见到这套组合，行为上把它当成了"启动环境信号"——也就是对训练脚手架的过拟合。官方 Project2 评测可见一斑：同一个模型用 Standard/PTC 预设是 91/92 分，换成 Minimal 预设就是 99/96 分。
+
+**后果：换一个 harness 就跑偏。** 在 omp 这类第三方 harness 里，默认首请求是全量工具目录 + 自定义 system prompt，与训练脚手架对不上，模型就退回"通用模式"：首行变成 "The user wants me to…"、"let me" 密度约涨 10 倍、工具选择也不再贴合 Minimal 轨迹。问题不在模型能力，而在启动环境不对。
+
+**对策：只在首请求重建脚手架，之后放开。** 本插件把首请求按 Minimal 逐字节复刻（persona 原句 + 双工具 schema + 256000 maxTokens，omp 上还要求 `/v1/responses` 信封），让模型落在 "We need" 轨迹上；出现首个持久信号（工具调用或首条回复）后轨迹已锁定，立即恢复 omp 的完整工具目录和 system prompt。这样既拿到 Minimal 的启动行为，又不放弃 Standard 的完整能力。
+
+
 [`dsh-anchored-standard`](https://github.com/xiaobright/dsh-anchored-standard) 的 omp 移植：让 DeepSeek V4 Pro 以 Minimal 对齐的 scaffold 启动首个请求（官方 persona + `bash` + `str_replace_editor` + 256000 maxTokens），首个持久信号后恢复完整 omp 工具目录与特色 system prompt。扩展本体见 [`index.ts`](./index.ts)。
 
 ## 原理（一分钟版）
@@ -121,6 +130,12 @@ modelRoles:
 3. "We need" 轨迹依赖 persona 打头——自定义 `ANCHORED_PERSONA` 换掉官方原句会导致语态回到 let-me 风格（实测）。
 4. `full` 模式（原版 omp system prompt）实测 let_me 密度涨 ~10 倍，不推荐与语态目标同用。
 5. dsh 的评测分数（Project2 98/99）在 omp 上未复现完整持续性；本配置复现的是首请求锚定与工具选择层行为。
+
+## 小结：什么时候该装
+
+- **装的理由**：你在 omp 里用 `deepseek-v4-pro`，且想要官方 Minimal 的首请求轨迹（"We need" 语态 + 双工具选择），同时保留晋升后的完整工具目录。
+- **不装也不影响功能**：模型照常工作，只是首请求走 "The user wants me to…" 的通用轨迹；其他模型完全不受本插件影响。
+- **本质**：这不是能力增强插件，而是行为锚定——把模型放回它训练时的启动环境，首请求之后按需放开。对语态无感的场景可以不用。
 
 ## 回滚
 
