@@ -1,6 +1,6 @@
 {
   "name": "omp-deepseek-anchor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "omp extension: DeepSeek V4 Pro Minimal-anchored bootstrap, then full Standard tools (port of dsh-anchored-standard)",
   "type": "module",
   "main": "index.ts",
