@@ -1,6 +1,6 @@
 ## What this is
 
-**`omp-deepseek-anchor`** — a port of `dsh-anchored-standard` for [Oh My Pi](https://github.com/can1357/oh-my-pi) (omp), the pi/omp coding harness. Two-phase anchor for DeepSeek V4 Pro: Minimal-aligned bootstrap on request #1, full tool catalog after the first durable signal.
+**`omp-deepseek-anchor`** — a port of `dsh-anchored-standard` for [Oh My Pi](https://github.com/can1357/oh-my-pi) (omp), the pi/omp coding harness. Two-phase anchor for DeepSeek V4 Pro: Minimal-aligned bootstrap on request `#1`, full tool catalog after the first durable signal.
 
 - **GitHub**: https://github.com/jamespan/omp-deepseek-anchor
 - **npm**: `omp-deepseek-anchor` (v1.0.1)
@@ -39,7 +39,7 @@ Feedback and cross-checking welcome — especially if anyone can isolate the env
 
 ## 这是什么
 
-**`omp-deepseek-anchor`**——把 `dsh-anchored-standard` 移植到 [Oh My Pi](https://github.com/can1357/oh-my-pi)（omp，pi 的后续 harness）。DeepSeek V4 Pro 的两阶段锚定：请求 #1 Minimal 对齐启动，首个持久信号后恢复完整工具目录。
+**`omp-deepseek-anchor`**——把 `dsh-anchored-standard` 移植到 [Oh My Pi](https://github.com/can1357/oh-my-pi)（omp，pi 的后续 harness）。DeepSeek V4 Pro 的两阶段锚定：请求 `#1` Minimal 对齐启动，首个持久信号后恢复完整工具目录。
 
 - **GitHub**：https://github.com/jamespan/omp-deepseek-anchor
 - **npm**：`omp-deepseek-anchor`（v1.0.1）
